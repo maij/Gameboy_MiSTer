@@ -16,6 +16,7 @@ entity gbc_snd is
 	port (
         clk          : in std_logic;
         ce           : in std_logic;
+		sound_clk	 : in std_logic;
         reset        : in std_logic;
 
         is_gbc       : in std_logic;
