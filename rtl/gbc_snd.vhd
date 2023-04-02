@@ -16,7 +16,7 @@ entity gbc_snd is
 	port (
         clk          : in std_logic;
         ce           : in std_logic;
-		sound_clk	 : in std_logic;
+		clk_sound	 : in std_logic;
         reset        : in std_logic;
 
         is_gbc       : in std_logic;
@@ -368,6 +368,19 @@ begin
 	SS_Sound3_BACK( 7 downto  0) <= ch_map;
 	SS_Sound3_BACK(15 downto  8) <= ch_vol;
 	SS_Sound3_BACK(22 downto 16) <= sq1_slen;
+
+	SS_Sound3_BACK(          23) <= sq1_playing;
+    SS_Sound3_BACK(34 downto 24) <= sq1_fr2;
+    SS_Sound3_BACK(38 downto 35) <= sq1_vol;
+    SS_Sound3_BACK(          39) <= sq2_playing;
+    SS_Sound3_BACK(43 downto 40) <= sq2_vol;
+    SS_Sound3_BACK(45 downto 44) <= "00"; -- unused
+    SS_Sound3_BACK(49 downto 46) <= wav_wav_r;
+    SS_Sound3_BACK(          50) <= wav_playing;
+    SS_Sound3_BACK(55 downto 51) <= std_logic_vector(wav_index);
+    SS_Sound3_BACK(57 downto 56) <= std_logic_vector(wav_access);
+    SS_Sound3_BACK(          58) <= noi_playing;
+    SS_Sound3_BACK(62 downto 59) <= noi_vol;
 	
 	wav_ram_savestate : for k in 0 to 15 generate
 		SS_Wave1_BACK(4*(k+1) - 1  downto  4*k) <= wav_ram(k);
@@ -818,19 +831,6 @@ begin
 
     end process read_registers;
     
-    SS_Sound3_BACK(          23) <= sq1_playing;
-    SS_Sound3_BACK(34 downto 24) <= sq1_fr2;
-    SS_Sound3_BACK(38 downto 35) <= sq1_vol;
-    SS_Sound3_BACK(          39) <= sq2_playing;
-    SS_Sound3_BACK(43 downto 40) <= sq2_vol;
-    SS_Sound3_BACK(45 downto 44) <= "00"; -- unused
-    SS_Sound3_BACK(49 downto 46) <= wav_wav_r;
-    SS_Sound3_BACK(          50) <= wav_playing;
-    SS_Sound3_BACK(55 downto 51) <= std_logic_vector(wav_index);
-    SS_Sound3_BACK(57 downto 56) <= std_logic_vector(wav_access);
-    SS_Sound3_BACK(          58) <= noi_playing;
-    SS_Sound3_BACK(62 downto 59) <= noi_vol;
-
 	square1 : process(clk, sq1_vol, sq1_svol, sq1_envsgn, sq1_out, sq1_suppressed)
 		constant duty_0          : std_logic_vector(0 to 7) := "00000001";
 		constant duty_1          : std_logic_vector(0 to 7) := "10000001";
