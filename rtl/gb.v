@@ -149,7 +149,7 @@ wire isGBC_mode = !ff4c_key0 | boot_rom_enabled;
 
 wire [15:0] cpu_addr;
 wire [7:0]  cpu_do;
-wire 	    sound_clk;
+wire 	    clk_sound;
 
 wire sel_timer = (cpu_addr[15:4] == 12'hff0) && (cpu_addr[3:2] == 2'b01);
 wire sel_video_reg = (cpu_addr[15:4] == 12'hff4) || (isGBC && (cpu_addr[15:4] == 12'hff6) && (cpu_addr[3:0] >= 4'h8 && cpu_addr[3:0] <= 4'hC)); //video and oam dma (+ ff68-ff6C when gbc)
@@ -444,7 +444,7 @@ gbc_snd audio (
 	.clk				( clk_sys			),
 	.ce            ( ce_2x           ),
 	.reset			( reset_ss			),
-	.sound_clk		( sound_clk) ,
+	.clk_sound		( clk_sound) ,
 	
 	.is_gbc        ( isGBC           ),
 
@@ -659,7 +659,7 @@ timer timer (
 	.cpu_wr      		 ( !cpu_wr_n_edge ),
 	.cpu_di      		 ( cpu_do        ),
 	.cpu_do      		 ( timer_do      ),
-	.clk_sound_out		 ( sound_clk     ),
+	.clk_sound_out		 ( clk_sound     ),
 	
 	.SaveStateBus_Din  (SaveStateBus_Din ), 
 	.SaveStateBus_Adr  (SaveStateBus_Adr ),
