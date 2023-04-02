@@ -442,7 +442,7 @@ wire audio_wr = !cpu_wr_n_edge && sel_audio;
 
 gbc_snd audio (
 	.clk				( clk_sys			),
-	.ce            ( ce_2x           ),
+	.ce            ( ce           ),
 	.reset			( reset_ss			),
 	.clk_sound		( clk_sound) ,
 	
