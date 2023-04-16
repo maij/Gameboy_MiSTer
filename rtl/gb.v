@@ -31,6 +31,8 @@ module gb (
     input real_cgb_boot,
 	input isSGB,
 
+	input [3:0] apu_channel_enable,
+
 	// cartridge interface
 	// can adress up to 1MB ROM
 	output [14:0] ext_bus_addr,
@@ -447,6 +449,7 @@ gbc_snd audio (
 	.clk_sound		( clk_sound) ,
 	
 	.is_gbc        ( isGBC           ),
+	.apu_channel_enable_debug (apu_channel_enable),
 
 	.s1_read  		( audio_rd  		),
 	.s1_write 		( audio_wr  		),

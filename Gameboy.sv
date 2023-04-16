@@ -200,7 +200,7 @@ assign AUDIO_MIX = status[8:7];
 // 0         1         2         3          4         5         6
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// XXXXXXXXXXX XXXXXXXXXXXXXXXXXXXX XXXXXXXXXXX
+// XXXXXXXXXXX XXXXXXXXXXXXXXXXXXXX XXXXXXXXXXX					XXXX
 
 `include "build_id.v" 
 localparam CONF_STR = {
@@ -261,7 +261,13 @@ localparam CONF_STR = {
 	"P3OR,Rewind Capture,Off,On;",
 	"P3-;",
 	"P3o3,Super Game Boy + GBC,Off,On;",
-    
+
+	"P4,Debug;",
+	"P4-;",
+	"P4O[60],Square 1,On,Off;",
+	"P4O[61],Square 2,On,Off;",
+	"P4O[62],Wave,On,Off;",
+	"P4O[63],Noise,On,Off;",
 
 	"-;",
 	"R0,Reset;",
@@ -637,6 +643,8 @@ gb gb (
     .real_cgb_boot ( using_real_cgb_bios ),  
 	.isSGB       ( |sgb_en & ~isGBC ),
 	.megaduck    ( megaduck   ),
+
+	.apu_channel_enable (~status[63:60]),
 
 	.joy_p54     ( joy_p54     ),
 	.joy_din     ( joy_do_sgb  ),
