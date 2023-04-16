@@ -19,6 +19,7 @@ entity gbc_snd is
         reset        : in std_logic;
 
         is_gbc       : in std_logic;
+		apu_channel_enable_debug : in std_logic_vector(3 downto 0);
 
         s1_read      : in std_logic;
         s1_write     : in std_logic;
@@ -1669,6 +1670,10 @@ begin
 					wav_analog := noi_dac_out;
 				when others => null;
 			end case;
+
+			if apu_channel_enable_debug(k) = '0' then
+				wav_analog := (others => '0');
+			end if;
 
 			if ch_map(k) = '1' then
 				snd_right_in := snd_right_in + wav_analog;
