@@ -120,7 +120,7 @@ module timer (
 	end
 
 	/* Overflow timing explanation (https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-overflow-behaviour)
-	Somewhat unclear is why the timer clock operates at 1/4 of the system clock frequency.
+	Here, the timer clock operates at 1/4 of the system clock frequency. That is, the timer aligns with a machine cycle.
 
 	Basic sequence of events with values at each cycle:
 	Clock tick -1: TIMA overflow occurs, i.e. {OVERFLOW_FLAG, TIMA} == (8'hff + 1)
