@@ -56,7 +56,7 @@ module timer (
 	assign clk_sound_out = clk_sound_r && !clk_sound;
 
 	reg  clk_sound_r;
-	wire clk_sound = cpu_speed ? div[6] : div[5]; 
+	wire clk_sound = cpu_speed ? div[5] : div[4]; 
 	
 	always @(posedge clk_sys) begin : CLK_SOUND
 		if (reset)

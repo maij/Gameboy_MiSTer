@@ -280,7 +280,7 @@ begin
 				en_len   <= '0';
 				en_env   <= '0';
 				en_sweep <= '0';
-				if en_512 = '1' then
+				if clk_sound = '1' then
 					en_len_r <= not en_len_r;
 					if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
 						en_len   <= '1';
