@@ -438,13 +438,18 @@ end
 // --------------------------------------------------------------------
 // ------------------------------ audio -------------------------------
 // --------------------------------------------------------------------
-
 wire audio_rd = !cpu_rd_n && sel_audio;
-wire audio_wr = !cpu_wr_n_edge && sel_audio;
+wire audio_wr = !cpu_wr_n && sel_audio;
+// When running at 2x cpu speed, writes will be asserted for a 8 MiHz clk cycle, which may be missed by the APU running at 4 MiHz.
+// (cpu_speed && (!old_cpu_wr_n || !cpu_wr_n)) || (!cpu_speed && !cpu_wr_n)
+// A(Bn + Cn) + AnCn = ABn + ACn + AnCn = Cn(A + An) + ABn = Cn + ABn
+// wire audio_wr = ((!old_cpu_wr_n && cpu_speed) || !cpu_wr_n) && sel_audio;
 
 gbc_snd audio (
 	.clk				( clk_sys			),
 	.ce            ( ce           ),
+	.ce_2x            ( ce_2x           ),
+	.cpu_speed      (cpu_speed),
 	.reset			( reset_ss			),
 	.clk_sound		( clk_sound) ,
 	
