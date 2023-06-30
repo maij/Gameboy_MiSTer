@@ -16,6 +16,8 @@ entity gbc_snd is
 	port (
         clk          : in std_logic;
         ce           : in std_logic;
+		ce_2x		 : in std_logic;
+		cpu_speed	 : in std_logic;
 		clk_sound	 : in std_logic;
         reset        : in std_logic;
 
@@ -261,50 +263,82 @@ begin
 				en_env    <= '0';
 				en_sweep  <= '0';
 				en_512    <= '0';
-			elsif ce = '1' then
-				-- Base clock divider
-				clkcnt := clkcnt + 1;
-				if clkcnt(0) = '1' then
-					en_snden2 <= '1';
-				else
-					en_snden2 <= '0';
-				end if;
-				
-				if clkcnt = "11" then
-					en_snden4 <= '1';
-				else
-					en_snden4 <= '0';
-				end if;
-
+			else
 				-- Frame sequencer (length, envelope, sweep) clock enables
-				en_len   <= '0';
-				en_env   <= '0';
-				en_sweep <= '0';
-				if clk_sound = '1' then
-					en_len_r <= not en_len_r;
-					if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
-						en_len   <= '1';
-						en_len_r <= not en_len_r;
-					end if;
-					if framecnt = 2 or framecnt = 6 then
-						en_sweep <= '1';
-					end if;
-					if framecnt = 7 then
-						en_env <= '1';
-					end if;
+				if ((ce_2x = '1' and cpu_speed = '1') or (ce = '1' and cpu_speed = '0')) then
+				-- if ce = '1' then
+					en_len   <= '0';
+					en_env   <= '0';
+					en_sweep <= '0';
+					if clk_sound = '1' then
 
-					if framecnt < 7 then
-						framecnt <= framecnt + 1;
-					else
-						framecnt <= 0;
+				-- end if;
+				-- if clk_sound = '1' then
+						en_len_r <= not en_len_r;
+						if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
+							en_len   <= '1';
+							-- en_len_r <= not en_len_r;
+						end if;
+						if framecnt = 2 or framecnt = 6 then
+							en_sweep <= '1';
+						end if;
+						if framecnt = 7 then
+							en_env <= '1';
+						end if;
+
+						if framecnt < 7 then
+							framecnt <= framecnt + 1;
+						else
+							framecnt <= 0;
+						end if;
 					end if;
 				end if;
 
-					--
-				en_512 <= '0';
-				temp_512 := ('0' & cnt_512) + to_unsigned(1, temp_512'length);
-				cnt_512  := temp_512(temp_512'high - 1 downto temp_512'low);
-				en_512 <= temp_512(13);
+				if ce = '1' then
+					-- Base clock divider
+					clkcnt := clkcnt + 1;
+					if clkcnt(0) = '1' then
+						en_snden2 <= '1';
+					else
+						en_snden2 <= '0';
+					end if;
+					
+					if clkcnt = "11" then
+						en_snden4 <= '1';
+					else
+						en_snden4 <= '0';
+					end if;
+
+					-- -- Frame sequencer (length, envelope, sweep) clock enables
+					-- en_len   <= '0';
+					-- en_env   <= '0';
+					-- en_sweep <= '0';
+					-- if clk_sound = '1' then
+					-- 	en_len_r <= not en_len_r;
+					-- 	if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
+					-- 		en_len   <= '1';
+					-- 		en_len_r <= not en_len_r;
+					-- 	end if;
+					-- 	if framecnt = 2 or framecnt = 6 then
+					-- 		en_sweep <= '1';
+					-- 	end if;
+					-- 	if framecnt = 7 then
+					-- 		en_env <= '1';
+					-- 	end if;
+
+					-- 	if framecnt < 7 then
+					-- 		framecnt <= framecnt + 1;
+					-- 	else
+					-- 		framecnt <= 0;
+					-- 	end if;
+					-- end if;
+
+						--
+					en_512 <= '0';
+					temp_512 := ('0' & cnt_512) + to_unsigned(1, temp_512'length);
+					cnt_512  := temp_512(temp_512'high - 1 downto temp_512'low);
+					en_512 <= temp_512(13);
+				end if;
 			end if;
 		end if;
     end process;
