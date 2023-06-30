@@ -1,24 +1,3 @@
-//
-// timer.v
-//
-// Gameboy for the MIST board https://github.com/mist-devel
-// 
-// Copyright (c) 2015 Till Harbaum <till@harbaum.org> 
-// 
-// This source file is free software: you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License as published 
-// by the Free Software Foundation, either version 3 of the License, or 
-// (at your option) any later version. 
-// 
-// This source file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License 
-// along with this program.  If not, see <http://www.gnu.org/licenses/>. 
-//
-
 // Implementation follows the gbdev pandocs
 // https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html
 
@@ -58,13 +37,13 @@ module timer (
 
 	reg clk_sound_r;
 	wire clk_sound = cpu_speed ? div[5] : div[4]; 
+
 	// Use 4 MiHz clock to generate APU trigger to enforce alignment.
 	always @(posedge clk_sys) begin : CLK_SOUND
 		if (reset)
 			clk_sound_r <= 1'b0;
-		else if (ce_4MHz) begin
+		else if (ce_4MHz)
 			clk_sound_r <= clk_sound;
-		end
 	end
 
 	// Save states
