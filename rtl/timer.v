@@ -26,7 +26,8 @@
 module timer (
 	input  		reset,
 	input  		clk_sys,
-	input  		ce,    // 4 MHz cpu clock
+	input  		ce,    // 4 MiHz / 8 MiHz cpu clock
+	input 		ce_4MHz,
 	input 		cpu_speed,
 	output		irq,
 	
@@ -36,7 +37,7 @@ module timer (
 	input  		 cpu_wr,
 	input  [7:0] cpu_di,
 	output [7:0] cpu_do,
-	output 		 clk_sound_out,
+	output 		 apu_framecount_en,
 	
 	// Save states              
 	input  [63:0] SaveStateBus_Din, 
@@ -53,23 +54,16 @@ module timer (
 
 	// https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-global-circuit
 	// Falling-edge of selected counter
-	assign clk_sound_out = clk_sound_r[0] && !clk_sound;
+	assign apu_framecount_en = clk_sound_r && !clk_sound;
 
-	reg [1:0]  clk_sound_r;
+	reg clk_sound_r;
 	wire clk_sound = cpu_speed ? div[5] : div[4]; 
-	
+	// Use 4 MiHz clock to generate APU trigger to enforce alignment.
 	always @(posedge clk_sys) begin : CLK_SOUND
 		if (reset)
 			clk_sound_r <= 1'b0;
-		else if (ce) begin
-			// Default
-			clk_sound_r[0] <= clk_sound_r[1];
-			clk_sound_r[1] <= 1'b0;
-
-			if (cpu_speed)
-				clk_sound_r[1] <= clk_sound; // Delay 8 MiHz clk_edge detect 1 cycle to match APU at 4 MiHz.
-			else
-				clk_sound_r[0] <= clk_sound;
+		else if (ce_4MHz) begin
+			clk_sound_r <= clk_sound;
 		end
 	end
 

@@ -151,7 +151,7 @@ wire isGBC_mode = !ff4c_key0 | boot_rom_enabled;
 
 wire [15:0] cpu_addr;
 wire [7:0]  cpu_do;
-wire 	    clk_sound;
+wire 	    apu_framecount_en;
 
 wire sel_timer = (cpu_addr[15:4] == 12'hff0) && (cpu_addr[3:2] == 2'b01);
 wire sel_video_reg = (cpu_addr[15:4] == 12'hff4) || (isGBC && (cpu_addr[15:4] == 12'hff6) && (cpu_addr[3:0] >= 4'h8 && cpu_addr[3:0] <= 4'hC)); //video and oam dma (+ ff68-ff6C when gbc)
@@ -449,7 +449,7 @@ gbc_snd audio (
 	.clk				( clk_sys			),
 	.ce            ( ce           ),
 	.reset			( reset_ss			),
-	.clk_sound		( clk_sound) ,
+	.apu_framecount_en		( apu_framecount_en ),
 	
 	.is_gbc        ( isGBC           ),
 	.apu_channel_enable_debug (apu_channel_enable),
@@ -656,6 +656,7 @@ timer timer (
 	.reset	    		 ( reset_ss      ),
 	.clk_sys		     ( clk_sys       ),
 	.ce                  ( ce_cpu        ), // 2x in fast mode
+	.ce_4MHz 		     (ce), // Always 4 MiHz
 	.cpu_speed			 ( cpu_speed 	 ),
 
 	.irq         		 ( timer_irq     ),
@@ -665,7 +666,7 @@ timer timer (
 	.cpu_wr      		 ( !cpu_wr_n_edge ),
 	.cpu_di      		 ( cpu_do        ),
 	.cpu_do      		 ( timer_do      ),
-	.clk_sound_out		 ( clk_sound     ),
+	.apu_framecount_en	 ( apu_framecount_en),
 	
 	.SaveStateBus_Din  (SaveStateBus_Din ), 
 	.SaveStateBus_Adr  (SaveStateBus_Adr ),
