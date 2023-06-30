@@ -53,16 +53,24 @@ module timer (
 
 	// https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-global-circuit
 	// Falling-edge of selected counter
-	assign clk_sound_out = clk_sound_r && !clk_sound;
+	assign clk_sound_out = clk_sound_r[0] && !clk_sound;
 
-	reg  clk_sound_r;
+	reg [1:0]  clk_sound_r;
 	wire clk_sound = cpu_speed ? div[5] : div[4]; 
 	
 	always @(posedge clk_sys) begin : CLK_SOUND
 		if (reset)
 			clk_sound_r <= 1'b0;
-		else if (ce)
-			clk_sound_r <= clk_sound; 
+		else if (ce) begin
+			// Default
+			clk_sound_r[0] <= clk_sound_r[1];
+			clk_sound_r[1] <= 1'b0;
+
+			if (cpu_speed)
+				clk_sound_r[1] <= clk_sound; // Delay 8 MiHz clk_edge detect 1 cycle to match APU at 4 MiHz.
+			else
+				clk_sound_r[0] <= clk_sound;
+		end
 	end
 
 	// Save states

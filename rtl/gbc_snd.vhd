@@ -16,8 +16,6 @@ entity gbc_snd is
 	port (
         clk          : in std_logic;
         ce           : in std_logic;
-		ce_2x		 : in std_logic;
-		cpu_speed	 : in std_logic;
 		clk_sound	 : in std_logic;
         reset        : in std_logic;
 
@@ -60,7 +58,6 @@ architecture SYN of gbc_snd is
 
     signal en_snd2           : std_logic; -- Enable at clk/2
     signal en_snd4           : std_logic; -- Enable at clk/4
-    signal en_512            : std_logic; -- 512Hz enable 
 
     signal en_snden2         : std_logic; -- Enable at clk/2
     signal en_snden4         : std_logic; -- Enable at clk/4
@@ -231,7 +228,7 @@ begin
    SS_Sound1_BACK(         7) <= en_len   ;
    SS_Sound1_BACK(         8) <= en_env   ;
    SS_Sound1_BACK(         9) <= en_sweep ;
-   SS_Sound1_BACK(        10) <= en_512   ;
+   SS_Sound1_BACK(        10) <= '0'   ;
    
 
     -- Calculate divided and frame sequencer clock enables
@@ -251,7 +248,6 @@ begin
 				en_len    <= SS_Sound1( 7);                               -- '0';
 				en_env    <= SS_Sound1( 8);                               -- '0';
 				en_sweep  <= SS_Sound1( 9);                               -- '0';
-				en_512    <= SS_Sound1(10);                               -- '0';
 			elsif snd_enable = '0' then --only clock frame sequencer if sound is enabled, restart at 0 
 				clkcnt  := "00";
 				cnt_512 := (others => '0');
@@ -262,18 +258,13 @@ begin
 				en_len    <= '0';
 				en_env    <= '0';
 				en_sweep  <= '0';
-				en_512    <= '0';
 			else
 				-- Frame sequencer (length, envelope, sweep) clock enables
-				if ((ce_2x = '1' and cpu_speed = '1') or (ce = '1' and cpu_speed = '0')) then
-				-- if ce = '1' then
+				if ce = '1' then
 					en_len   <= '0';
 					en_env   <= '0';
 					en_sweep <= '0';
 					if clk_sound = '1' then
-
-				-- end if;
-				-- if clk_sound = '1' then
 						en_len_r <= not en_len_r;
 						if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
 							en_len   <= '1';
@@ -308,36 +299,6 @@ begin
 					else
 						en_snden4 <= '0';
 					end if;
-
-					-- -- Frame sequencer (length, envelope, sweep) clock enables
-					-- en_len   <= '0';
-					-- en_env   <= '0';
-					-- en_sweep <= '0';
-					-- if clk_sound = '1' then
-					-- 	en_len_r <= not en_len_r;
-					-- 	if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
-					-- 		en_len   <= '1';
-					-- 		en_len_r <= not en_len_r;
-					-- 	end if;
-					-- 	if framecnt = 2 or framecnt = 6 then
-					-- 		en_sweep <= '1';
-					-- 	end if;
-					-- 	if framecnt = 7 then
-					-- 		en_env <= '1';
-					-- 	end if;
-
-					-- 	if framecnt < 7 then
-					-- 		framecnt <= framecnt + 1;
-					-- 	else
-					-- 		framecnt <= 0;
-					-- 	end if;
-					-- end if;
-
-						--
-					en_512 <= '0';
-					temp_512 := ('0' & cnt_512) + to_unsigned(1, temp_512'length);
-					cnt_512  := temp_512(temp_512'high - 1 downto temp_512'low);
-					en_512 <= temp_512(13);
 				end if;
 			end if;
 		end if;
