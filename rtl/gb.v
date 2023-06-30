@@ -448,8 +448,6 @@ wire audio_wr = !cpu_wr_n && sel_audio;
 gbc_snd audio (
 	.clk				( clk_sys			),
 	.ce            ( ce           ),
-	.ce_2x            ( ce_2x           ),
-	.cpu_speed      (cpu_speed),
 	.reset			( reset_ss			),
 	.clk_sound		( clk_sound) ,
 	
