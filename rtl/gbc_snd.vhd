@@ -14,10 +14,10 @@ use work.pReg_savestates.all;
 library work;
 entity gbc_snd is
 	port (
-        clk          : in std_logic;
-        ce           : in std_logic;
-		clk_sound	 : in std_logic;
-        reset        : in std_logic;
+        clk          		 : in std_logic;
+        ce           		 : in std_logic;
+		apu_framecount_en	 : in std_logic;
+        reset        		 : in std_logic;
 
         is_gbc       : in std_logic;
 		apu_channel_enable_debug : in std_logic_vector(3 downto 0);
@@ -264,7 +264,7 @@ begin
 					en_len   <= '0';
 					en_env   <= '0';
 					en_sweep <= '0';
-					if clk_sound = '1' then
+					if apu_framecount_en = '1' then
 						en_len_r <= not en_len_r;
 						if framecnt = 0 or framecnt = 2 or framecnt = 4 or framecnt = 6 then
 							en_len   <= '1';
