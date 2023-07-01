@@ -84,10 +84,13 @@ module timer (
 	end
 
 	reg [2:0] tac;
-	wire clk_tac =  (tac[1:0] == 2'b00) ? clk_div[9]:
-					(tac[1:0] == 2'b01) ? clk_div[3]:
-					(tac[1:0] == 2'b10) ? clk_div[5]:
-										  clk_div[7];
+	// Disabling TAC can create a clock event to TIMA
+	wire clk_tac =  tac[2] &&  (
+						(tac[1:0] == 2'b00) ? clk_div[9]:
+						(tac[1:0] == 2'b01) ? clk_div[3]:
+						(tac[1:0] == 2'b10) ? clk_div[5]:
+											  clk_div[7]
+					);
 	reg  clk_tac_r;
 	always @(posedge clk_sys) begin : TAC
 		if (reset) begin
@@ -128,9 +131,8 @@ module timer (
 		end else if (ce) begin			
 			tima_overflow_buffer <= {tima_overflow_buffer[3:0], 1'b0};
 
-			if(tac[2] && clk_tac_r && !clk_tac) begin
+			if(clk_tac_r && !clk_tac)
 				{tima_overflow_buffer[0], tima} <= tima + 1'b1;
-			end
 			
 			// IRQ asserted with clock tick 4 (beginning of interrupt cycle), TIMA write takes place 1 clock TICK later
 			if (irq) begin
