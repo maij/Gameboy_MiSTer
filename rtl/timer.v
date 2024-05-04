@@ -39,7 +39,7 @@ module timer (
 	wire clk_sound = cpu_speed ? div[5] : div[4]; 
 
 	// Use 4 MiHz clock to generate APU trigger to enforce alignment.
-	always @(posedge clk_sys) begin : CLK_SOUND
+	always @(posedge clk_sys) begin : CLK_SOUND_BLK
 		if (reset)
 			clk_sound_r <= 1'b0;
 		else if (ce_4MHz)
@@ -63,7 +63,7 @@ module timer (
 	reg [15:0] clk_div;
 	wire [7:0] div = clk_div[15:8];
 
-	always @(posedge clk_sys) begin : CLK_DIV
+	always @(posedge clk_sys) begin : CLK_DIV_BLK
 		if (reset)
 			clk_div <= {SS_Timer[37:30], SS_Timer[7:0]}; // 16'd8;
 		else if(cpu_sel && cpu_wr && (cpu_addr == 2'b00)) // Writing any value to DIV register clears counter.
@@ -74,7 +74,7 @@ module timer (
 
 	reg [7:0] tma;
 
-	always @(posedge clk_sys) begin : TMA
+	always @(posedge clk_sys) begin : TMA_BLK
 		if (reset)
 			tma <= SS_Timer[25:18]; // 0
 		else if (ce) begin
@@ -92,7 +92,7 @@ module timer (
 											  clk_div[7]
 					);
 	reg  clk_tac_r;
-	always @(posedge clk_sys) begin : TAC
+	always @(posedge clk_sys) begin : TAC_BLK
 		if (reset) begin
 			tac 	  <= SS_Timer[28:26]; // 0
 			clk_tac_r <= SS_Timer[38]; // 0
@@ -124,7 +124,7 @@ module timer (
 	reg [7:0] tima;
 	reg [4:0] tima_overflow_buffer;
 	assign irq = tima_overflow_buffer[4];
-	always @(posedge clk_sys) begin : TIMA
+	always @(posedge clk_sys) begin : TIMA_BLK
 		if(reset) begin
 			tima                 <= SS_Timer[17:10]; // 0
 			tima_overflow_buffer <= SS_Timer[46:42]; // 0
