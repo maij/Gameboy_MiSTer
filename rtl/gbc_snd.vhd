@@ -1,8 +1,3 @@
--- Notes:
--- 	When the output DAC of each channel is disabled, the real voltage will drift
---  to 0 V at some unknown rate. Here, it is implemented as an immediate return to "0 V".
---  If this is found to not be accurate enough, an additional timer may be added.
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -234,13 +229,10 @@ begin
     -- Calculate divided and frame sequencer clock enables
     frame_sequencer : process (clk)
         variable clkcnt   : unsigned(1 downto 0);
-        variable cnt_512  : unsigned(12 downto 0);
-        variable temp_512 : unsigned(13 downto 0);
     begin
 		if rising_edge(clk) then
 			if reset = '1' then
 				clkcnt  := "00";
-				cnt_512 := (others => '0');
 				framecnt  <= to_integer(unsigned(SS_Sound1(3 downto 1))); -- 0;
 				en_len_r  <= SS_Sound1( 4);                               -- '0';
 				en_snden2 <= SS_Sound1( 5);                               -- '0';
@@ -250,7 +242,6 @@ begin
 				en_sweep  <= SS_Sound1( 9);                               -- '0';
 			elsif snd_enable = '0' then --only clock frame sequencer if sound is enabled, restart at 0 
 				clkcnt  := "00";
-				cnt_512 := (others => '0');
 				framecnt  <= 0;
 				en_len_r  <= '0';
 				en_snden2 <= '0';
