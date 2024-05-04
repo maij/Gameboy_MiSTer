@@ -56,6 +56,7 @@ module gb (
     // Bootrom features
 	input boot_gba_en,
     input fast_boot_en,
+	input force_dmg_en,
 
 	// audio
 	output [15:0] audio_l,
@@ -289,7 +290,7 @@ wire [7:0] cpu_di =
 		sel_FF73?FF73: // unused register, all bits read/write
 		sel_FF74?FF74: // unused register, all bits read/write, only in CGB mode
 		sel_FF75?{1'b1,FF75, 4'b1111}: // unused register, bits 4-6 read/write
-        sel_FF50?{6'b0, fast_boot_en, boot_gba_en}: // MiSTer special instruction register 
+        sel_FF50?{5'b0, force_dmg_en, fast_boot_en, boot_gba_en}: // MiSTer special instruction register 
 		8'hff;
 
 wire cpu_wr_n;
