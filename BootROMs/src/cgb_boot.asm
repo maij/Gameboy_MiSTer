@@ -220,7 +220,7 @@ ENDC
     jr z, .cgbmode
     inc b ; AGB mode set b = 1, reset z flag
 .cgbmode
-    ld a, $11
+    call BootReturnCode
     jr BootGame
 
 HDMAData:
@@ -832,12 +832,21 @@ Preboot:
     ld e, c
     ld l, $0d
 
+    call CheckDMGForce
+    jr z, .CGBGamecheck 
+
+    call EmulateDMG
+    ld a, $04
+    jr .DMGCompatibility
+
+.CGBGamecheck
     ; Check cart CGB compatibility byte
     ld a, [$143]
     bit 7, a 
     call z, EmulateDMG 
     bit 7, a 
 
+.DMGCompatibility
     ldh [rKEY0], a ; write CGB compatibility byte, CGB mode
     ldh a, [TitleChecksum]
     ld b, a
@@ -1030,10 +1039,13 @@ _ClearVRAMViaHDMA:
 
 ; clobbers AF and HL
 GetInputPaletteIndex:
+    call CheckDMGForce
+    jr nz, .skipCGBGamecheck 
     ld a, [$143]
     bit 7, a
     ret nz ; if CGB game, palette cannot be chosen
 
+.skipCGBGamecheck
     ld a, $20 ; Select directions
     ldh [rJOYP], a
     ldh a, [rJOYP]
@@ -1184,6 +1196,20 @@ CheckFastBoot:
     ldh a, [rBANK]
     bit 1, a
     ret
+
+CheckDMGForce:
+    ldh a, [rBANK]
+    bit 2, a
+    ret
+
+BootReturnCode:
+    call CheckDMGForce
+    ld a, $11
+    jr z, .normalBoot
+    ld a, $01
+.normalBoot
+    ret
+
 
 CheckAGBPalette:
     push hl

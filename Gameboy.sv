@@ -21,7 +21,7 @@
 //============================================================================
 
 // Bootrom checksums
-`define MISTER_CGB0_CHECKSUM 18'h2CE10
+`define MISTER_CGB0_CHECKSUM 18'h2E351
 `define ORIGINAL_CGB_CHECKSUM 18'h2F3EA
 
 module emu
@@ -200,7 +200,7 @@ assign AUDIO_MIX = status[8:7];
 // 0         1         2         3          4         5         6
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// XXXXXXXXXXX XXXXXXXXXXXXXXXXXXXX XXXXXXXXXXX
+// XXXXXXXXXXX XXXXXXXXXXXXXXXXXXXX XXXXXXXXXXX					
 
 `include "build_id.v" 
 localparam CONF_STR = {
@@ -250,6 +250,7 @@ localparam CONF_STR = {
 	"P2-;",
 	"d6P2O[37],GBC/GBA mode,GBC,GBA;",
     "d8P2O[42],Fast boot,Off,On;",
+    "d8P2O[43],Force DMG mode for GBC,Off,On;",
 
 	"P3,Misc.;",
 	"P3-;",
@@ -654,6 +655,7 @@ gb gb (
 
 	.boot_gba_en    ( boot_gba_available && status[37] ),
 	.fast_boot_en   ( fastboot_available && status[42] ),
+	.force_dmg_en   ( fastboot_available && status[43] ),
 
 	.cgb_boot_download ( cgb_boot_download ),
 	.dmg_boot_download ( dmg_boot_download ),

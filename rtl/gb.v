@@ -54,6 +54,7 @@ module gb (
     // Bootrom features
 	input boot_gba_en,
     input fast_boot_en,
+	input force_dmg_en,
 
 	// audio
 	output [15:0] audio_l,
@@ -285,7 +286,7 @@ wire [7:0] cpu_di =
 		sel_FF73?FF73: // unused register, all bits read/write
 		sel_FF74?FF74: // unused register, all bits read/write, only in CGB mode
 		sel_FF75?{1'b1,FF75, 4'b1111}: // unused register, bits 4-6 read/write
-        sel_FF50?{6'b0, fast_boot_en, boot_gba_en}: // MiSTer special instruction register 
+        sel_FF50?{5'b0, force_dmg_en, fast_boot_en, boot_gba_en}: // MiSTer special instruction register 
 		8'hff;
 
 wire cpu_wr_n;
@@ -905,8 +906,8 @@ always @(posedge clk_sys) begin
 		boot_rom_enabled <= SS_Top[23]; // 1'b1;
 	else if (ce) begin 
 		if((cpu_addr == 16'hff50) && !cpu_wr_n_edge)
-          if ((isGBC && cpu_do[7:0]==8'h11) || (!isGBC && cpu_do[0]))
-		          boot_rom_enabled <= 1'b0;
+			if ((isGBC && (cpu_do[7:0]==8'h11 || (cpu_do[7:0]==8'h01 && force_dmg_en) )) || (!isGBC && cpu_do[0]))
+				boot_rom_enabled <= 1'b0;
 	end
 end
 			
