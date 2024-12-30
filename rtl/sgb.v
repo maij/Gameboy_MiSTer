@@ -446,6 +446,9 @@ always @(posedge clk_sys) begin
 					if (cmd == CMD_CHR_TRN) chr_trn_done <= 1'b1;
 				end
 			end
+
+			if (pix_y == 8'd139)
+				pix_y <= 0;
 		end
 
 		// Wait until start of frame
@@ -908,7 +911,7 @@ always @(posedge clk_sys) begin
 		end else if (mask_en_r == 2'd2) begin
 			sgb_lcd_data <= 0;
 		end else if (!lcd_data_gb_r || mask_en_r == 2'd3) begin
-			sgb_lcd_data <= palette[0][0:14];
+			sgb_lcd_data <= palette[0][0:14]; // Colour 0 should be transparent. Is this?
 		end else begin
 			sgb_lcd_data <= palette[pal_no][lcd_data_gb_r*15 +:15];
 		end
