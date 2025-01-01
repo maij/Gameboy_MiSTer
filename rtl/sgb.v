@@ -388,6 +388,7 @@ wire [7:0] joystick =
 				(joypad_id == 2'd2) ? joystick_2 :
 				                      joystick_3;
 
+// Off or vblank.
 wire lcd_off = !lcd_on || (lcd_mode == 2'd01);
 reg old_lcd_off;
 
@@ -535,11 +536,11 @@ dpram #(12,16) tile_ram (
 	.q_b        ( tile_data )
 );
 
-reg [14:0] sys_pal_data, pal_wr_data;
+reg [14:0] pal_wr_data;
 reg [1:0] pal_wr_no, pal_wr_col_no;
 reg [0:59] palette[4];
 reg pal_set_wait, pal_set_busy, pal_wr, pal_cancel_mask, pal_clear;
-reg [3:0] pal_set_cnt, pal_set_cnt_r;
+reg [3:0] pal_set_cnt;
 reg [10:0] sys_pal_ram_addr;
 reg output_sgb_pal;
 
@@ -559,29 +560,26 @@ always @(posedge clk_sys) begin
 		if (pal_set) pal_set_wait <= 1'b1;
 
 		if (pal_set_wait & frame_end) begin
+			pal_wr <= 1'b1;
 			pal_set_wait <= 0;
 			pal_set_busy <= 1'b1;
 			pal_set_cnt <= 0;
-			pal_set_cnt_r <= 0;
 		end
 
-		sys_pal_data <= sys_pal_ram[{sys_pal_no[pal_set_cnt[3:2]], pal_set_cnt[1:0]}];
 
 		if (pal_set_busy) begin
-
+			pal_wr <= 1'b1;
 			pal_set_cnt <= pal_set_cnt + 1'b1;
-			pal_set_cnt_r <= pal_set_cnt;
 
-			if (&pal_set_cnt_r) begin
+			if (&pal_set_cnt) begin
 				pal_set_busy <= 0;
 				output_sgb_pal <= 1'b1;
 				if (cancel_mask) pal_cancel_mask <= 1'b1;
 			end
 
-			pal_wr <= 1'b1;
-			pal_wr_data <= sys_pal_data;
-			{pal_wr_no, pal_wr_col_no} <= pal_set_cnt_r;
-
+			
+			pal_wr_data <= sys_pal_ram[{sys_pal_no[pal_set_cnt[3:2]], pal_set_cnt[1:0]}];
+			{pal_wr_no, pal_wr_col_no} <= pal_set_cnt;
 		end
 
 		// PAL01,PAL23,PAL03,PAL12
