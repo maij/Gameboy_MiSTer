@@ -611,7 +611,8 @@ always @(posedge clk_sys) begin
 end
 
 reg [15:0] attr_file_data;
-reg [0:719] attr_file;
+reg [0:719] attr_file, attr_file_buf;
+reg attr_flush_buf;
 
 reg attr_set_busy, attr_blk_busy, attr_lin_busy, attr_div_busy, attr_chr_busy;
 reg [8:0] attr_set_cnt, attr_set_cnt_r;
@@ -631,6 +632,7 @@ reg [8:0] attr_chr_offset;
 reg attr_clear;
 always @(posedge clk_sys) begin
 	if (reset) begin
+		attr_flush_buf <= 0;
 		attr_set_busy <= 0;
 		attr_blk_busy <= 0;
 		attr_lin_busy <= 0;
@@ -671,6 +673,7 @@ always @(posedge clk_sys) begin
 
 			if (attr_file_idx == 6'd45 || attr_set_cnt_r == 9'd359) begin
 				attr_set_busy <= 0;
+				attr_flush_buf <= 1;
 				if (cancel_mask) attr_cancel_mask <= 1'b1;
 			end
 
@@ -698,25 +701,25 @@ always @(posedge clk_sys) begin
 					attr_blk_busy <= 0;
 					attr_lin_busy <= 0;
 					attr_div_busy <= 0;
+					attr_flush_buf <= 1;
 				end
 			end
 		 end
 
 		 // ATTR_BLK
 		 if (attr_blk_busy) begin
+			attr_file_wr <= 1'b1;
 			if (attr_tile_cnt_x > attr_blk_x1 && attr_tile_cnt_x < attr_blk_x2
 				&& attr_tile_cnt_y > attr_blk_y1 && attr_tile_cnt_y < attr_blk_y2) begin
 				// inside
 				if (attr_blk_ctrl[0]) begin
 					attr_file_pal_wr <= attr_blk_pal[1:0];
-					attr_file_wr <= 1'b1;
 				end
 			end else if (attr_tile_cnt_x < attr_blk_x1 || attr_tile_cnt_x > attr_blk_x2
 				|| attr_tile_cnt_y < attr_blk_y1 || attr_tile_cnt_y > attr_blk_y2) begin
 				// outside
 				if (attr_blk_ctrl[2]) begin
 					attr_file_pal_wr <= attr_blk_pal[5:4];
-					attr_file_wr <= 1'b1;
 				end
 			end else begin
 				// on border
@@ -725,15 +728,12 @@ always @(posedge clk_sys) begin
 				casez (attr_blk_ctrl)
 					3'b001: begin
 						attr_file_pal_wr <= attr_blk_pal[1:0];
-						attr_file_wr <= 1'b1;
 					end
 					3'b100: begin
 						attr_file_pal_wr <= attr_blk_pal[5:4];
-						attr_file_wr <= 1'b1;
 					end
 					3'b?1?:  begin
 						attr_file_pal_wr <= attr_blk_pal[3:2];
-						attr_file_wr <= 1'b1;
 					end
 				endcase
 			end
@@ -775,7 +775,13 @@ always @(posedge clk_sys) begin
 
 		if (attr_chr_busy) begin
 			attr_chr_pal_cnt <= attr_chr_pal_cnt + 1'b1;
-			if (&attr_chr_pal_cnt[1:0] || attr_chr_pal_cnt+1'b1 == attr_chr_len) attr_chr_busy <= 0;
+			attr_tile_no_wr <= attr_chr_offset + attr_chr_x;
+			attr_file_wr <= 1'b1;
+
+			if (&attr_chr_pal_cnt[1:0] || attr_chr_pal_cnt+1'b1 == attr_chr_len) begin
+				attr_chr_busy <= 0;
+				attr_flush_buf <= 1;
+			end
 
 			if (attr_chr_dir) begin
 				attr_chr_offset <= attr_chr_offset + 9'd20;
@@ -784,9 +790,7 @@ always @(posedge clk_sys) begin
 					attr_chr_x <= attr_chr_x + 1'b1;
 					if (attr_chr_x == 5'd19) attr_chr_x <= 0;
 				end
-			end
-
-			if (~attr_chr_dir) begin
+			end else begin
 				attr_chr_x <= attr_chr_x + 1'b1;
 				if (attr_chr_x == 5'd19) begin
 					attr_chr_x <= 0;
@@ -795,15 +799,12 @@ always @(posedge clk_sys) begin
 				end
 			end
 
-			attr_tile_no_wr <= attr_chr_offset + attr_chr_x;
 			case (attr_chr_pal_cnt[1:0])
 				0: attr_file_pal_wr <= attr_chr_data[7:6];
 				1: attr_file_pal_wr <= attr_chr_data[5:4];
 				2: attr_file_pal_wr <= attr_chr_data[3:2];
 				3: attr_file_pal_wr <= attr_chr_data[1:0];
 			endcase
-			attr_file_wr <= 1'b1;
-
 		end
 
 		if (attr_clear) begin
@@ -813,13 +814,20 @@ always @(posedge clk_sys) begin
 			attr_tile_no_wr <= attr_set_cnt;
 			attr_file_wr <= 1'b1;
 
-			if (attr_set_cnt == 9'd359) attr_clear <= 0;
+			if (attr_set_cnt == 9'd359) begin
+				attr_clear <= 0;
+				attr_flush_buf <= 1;
+			end
 		end
 
 		if (attr_file_wr) begin
-			attr_file[attr_tile_no_wr*2 +: 2] <= attr_file_pal_wr;
+			attr_file_buf[attr_tile_no_wr*2 +: 2] <= attr_file_pal_wr;
 		end
 
+		if (lcd_off && attr_flush_buf) begin
+			attr_file <= attr_file_buf;
+			attr_flush_buf <= 0;
+		end
 	end
 end
 
